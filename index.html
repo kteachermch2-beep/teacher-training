@@ -417,11 +417,12 @@ tr:hover td { background: var(--surface2); }
         <span class="nav-icon">✨</span> AI 성찰 피드백
       </div>
       <div class="nav-divider"></div>
-      <div class="nav-item" data-page="email" onclick="gotoPage('email')">
-        <span class="nav-icon">📧</span> 이메일 알림 설정
-      </div>
-      <div class="nav-item" data-page="export" onclick="gotoPage('export')">
-        <span class="nav-icon">📊</span> 엑셀 내보내기
+   <div class="nav-item" id="menu-email" style="display:none" data-page="email" onclick="gotoPage('email')">
+  <span class="nav-icon">📧</span> 이메일 알림 설정
+</div>
+<div class="nav-item" id="menu-export" style="display:none" data-page="export" onclick="gotoPage('export')">
+  <span class="nav-icon">📊</span> 엑셀 내보내기
+</div>
         <div class="nav-item" data-page="myexport" onclick="gotoPage('myexport')">
   <span class="nav-icon">📥</span> 내 기록 다운로드
 </div>
@@ -1154,6 +1155,8 @@ function verifyAdmin() {
   const pin = document.getElementById('admin-pin')?.value;
   if (pin === ADMIN_PIN) {
     isAdmin = true;
+    document.getElementById('menu-email').style.display = 'flex';
+document.getElementById('menu-export').style.display = 'flex';
     closeModal('admin-modal');
     gotoPage('admin');
     loadAdmin();
