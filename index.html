@@ -402,8 +402,9 @@ tr:hover td { background: var(--surface2); }
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <div class="org">실천교육교사모임 2026</div>
-      <div class="title">함께 '실천'하는<br>연수</div>
+      <img src="https://cdn.koreateachers.org/com/image/com-5_logo02.png" style="width:140px;margin-bottom:10px">
+<div class="org">실천교육교사모임 2026</div>
+<div class="title">함께 '실천'하는<br>연수</div>
     </div>
     <nav class="nav">
       <div class="nav-item active" data-page="write" onclick="gotoPage('write')">
@@ -928,9 +929,8 @@ function loadBoard() {
       <div class="avatar">${initials}</div>
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span class="rec-name">${r.name || '익명'}</span>
-          ${r.school ? `<span style="font-size:12px;color:var(--text3)">${r.school}</span>` : ''}
-          <span class="badge badge-r${r.round}" style="margin-left:auto">${ROUND_LABEL[r.round] || ''}</span>
+          <span class="badge badge-r${r.round}">${ROUND_LABEL[r.round] || ''}</span>
+          <span style="font-size:12px;color:var(--text3)">${r.topic || ''} · ${r.date || ''}</span>
         </div>
         <div class="rec-sub">${r.topic || ''} · ${r.date || ''}</div>
         ${preview ? `<div class="rec-preview">${preview}</div>` : ''}
