@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>함께 '실천'하는 연수 — 실천교육교사모임</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg: #F8F6F1;
+  --surface: #FFFFFF;
+  --surface2: #F2EFE8;
+  --border: #E2DDD4;
+  --border2: #CCC8BE;
+  --text: #1A1714;
+  --text2: #6B6560;
+  --text3: #9B9590;
+  --accent: #2D5A3D;
+  --accent-light: #EAF2ED;
+  --accent2: #8B4513;
+  --r1: #1B4F8A; --r1bg: #EBF2FB;
+  --r2: #2D6B3A; --r2bg: #EAF4EC;
+  --r3: #7A5200; --r3bg: #FFF3DC;
+  --r4: #7A2340; --r4bg: #FCEDF3;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* Layout */
+.app-shell { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.main { flex: 1; overflow-y: auto; padding: 32px 40px; max-width: 900px; }
+
+/* Sidebar */
+.sidebar-logo {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo .org { font-size: 11px; color: var(--text3); letter-spacing: 0.04em; margin-bottom: 4px; }
+.sidebar-logo .title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+}
+.nav { padding: 12px 0; flex: 1; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  font-size: 13px;
+  color: var(--text2);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+}
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: var(--accent-light); color: var(--accent); border-left-color: var(--accent); font-weight: 500; }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.nav-divider { height: 1px; background: var(--border); margin: 8px 16px; }
+
+/* Admin pin */
+.admin-lock {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.admin-lock:hover { color: var(--text2); }
+
+/* Pages */
+.page { display: none; }
+.page.active { display: block; }
+
+/* Page header */
+.page-header { margin-bottom: 28px; }
+.page-header h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.page-header p { font-size: 14px; color: var(--text2); }
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* Form fields */
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+.field input, .field textarea, .field select {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 0.15s;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(45,90,61,0.08);
+}
+.field textarea { min-height: 80px; resize: vertical; line-height: 1.7; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* Chips */
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  padding: 5px 13px;
+  border-radius: 20px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.chip:hover { border-color: var(--border2); color: var(--text); }
+.chip.sel { background: var(--accent-light); color: var(--accent); border-color: var(--accent); font-weight: 500; }
+.chip[data-r="1"].sel { background: var(--r1bg); color: var(--r1); border-color: var(--r1); }
+.chip[data-r="2"].sel { background: var(--r2bg); color: var(--r2); border-color: var(--r2); }
+.chip[data-r="3"].sel { background: var(--r3bg); color: var(--r3); border-color: var(--r3); }
+.chip[data-r="4"].sel { background: var(--r4bg); color: var(--r4); border-color: var(--r4); }
+
+/* Buttons */
+.btn {
+  padding: 9px 18px;
+  font-size: 13px;
+  font-family: 'Noto Sans KR', sans-serif;
+  border-radius: var(--radius);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn:hover { background: var(--surface2); border-color: var(--border2); color: var(--text); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-primary:hover { background: #235030; border-color: #235030; color: #fff; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; align-items: center; }
+
+/* Round badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+.badge-r1 { background: var(--r1bg); color: var(--r1); }
+.badge-r2 { background: var(--r2bg); color: var(--r2); }
+.badge-r3 { background: var(--r3bg); color: var(--r3); }
+.badge-r4 { background: var(--r4bg); color: var(--r4); }
+.badge-accent { background: var(--accent-light); color: var(--accent); }
+
+/* Stats grid */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  text-align: center;
+}
+.stat-num { font-size: 28px; font-weight: 500; color: var(--text); line-height: 1; }
+.stat-label { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+/* Record list items */
+.rec-list { display: flex; flex-direction: column; gap: 0; }
+.rec-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.rec-item:last-child { border-bottom: none; }
+.rec-item:hover { background: var(--surface2); margin: 0 -24px; padding: 14px 24px; border-radius: 6px; border-bottom-color: transparent; }
+.avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.rec-name { font-size: 14px; font-weight: 500; }
+.rec-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.rec-preview { font-size: 13px; color: var(--text2); margin-top: 4px; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+/* Progress bars */
+.prog-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.prog-label { font-size: 12px; color: var(--text2); width: 120px; flex-shrink: 0; }
+.prog-bg { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 6px; border-radius: 3px; transition: width 0.5s ease; }
+.prog-count { font-size: 12px; color: var(--text3); width: 24px; text-align: right; }
+
+/* AI box */
+.ai-result {
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text);
+  white-space: pre-wrap;
+  border-left: 3px solid var(--accent);
+}
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  width: 480px;
+  max-width: 90vw;
+  box-shadow: var(--shadow-md);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal h2 { font-family: 'Noto Serif KR', serif; font-size: 18px; margin-bottom: 16px; }
+.modal-close { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text3); }
+
+/* Toast */
+.toast-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--text);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 24px;
+  font-size: 13px;
+  z-index: 200;
+  transition: transform 0.3s ease;
+  white-space: nowrap;
+}
+.toast-bar.show { transform: translateX(-50%) translateY(0); }
+.toast-bar.err { background: #C0392B; }
+
+/* Spinner */
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: -2px;
+}
+.spinner-dark {
+  border-color: rgba(0,0,0,0.1);
+  border-top-color: var(--accent);
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Empty state */
+.empty { text-align: center; color: var(--text3); font-size: 14px; padding: 40px 0; }
+.empty-icon { font-size: 32px; margin-bottom: 10px; }
+
+/* Admin dashboard */
+.admin-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 7px;
+  background: #7A2340;
+  color: #fff;
+  border-radius: 8px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; font-weight: 500; color: var(--text3); font-size: 12px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+
+/* Email config */
+.email-config-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.email-config-row:last-child { border-bottom: none; }
+.email-config-info { flex: 1; }
+.email-config-info .title { font-size: 13px; font-weight: 500; }
+.email-config-info .desc { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.toggle {
+  position: relative; width: 40px; height: 22px;
+  background: var(--border2); border-radius: 11px; cursor: pointer;
+  transition: background 0.2s; flex-shrink: 0;
+}
+.toggle.on { background: var(--accent); }
+.toggle::after {
+  content: ''; position: absolute; left: 3px; top: 3px;
+  width: 16px; height: 16px; background: #fff;
+  border-radius: 50%; transition: left 0.2s;
+}
+.toggle.on::after { left: 21px; }
+
+/* Round desc strip */
+.round-desc {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: var(--surface2);
+  border-radius: 6px;
+}
+
+/* Detail modal answer */
+.ans-block { margin-bottom: 14px; }
+.ans-q { font-size: 12px; color: var(--text3); margin-bottom: 4px; font-weight: 500; }
+.ans-a { font-size: 13px; color: var(--text); line-height: 1.7; }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { padding: 20px 16px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="org">실천교육교사모임 2026</div>
+      <div class="title">함께 '실천'하는<br>연수</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" data-page="write" onclick="gotoPage('write')">
+        <span class="nav-icon">✏️</span> 실천 기록 작성
+      </div>
+      <div class="nav-item" data-page="board" onclick="gotoPage('board')">
+        <span class="nav-icon">👥</span> 함께 보기
+      </div>
+      <div class="nav-item" data-page="ai" onclick="gotoPage('ai')">
+        <span class="nav-icon">✨</span> AI 성찰 피드백
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-item" data-page="email" onclick="gotoPage('email')">
+        <span class="nav-icon">📧</span> 이메일 알림 설정
+      </div>
+      <div class="nav-item" data-page="export" onclick="gotoPage('export')">
+        <span class="nav-icon">📊</span> 엑셀 내보내기
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-item" data-page="admin" onclick="checkAdmin()">
+        <span class="nav-icon">🔒</span> 운영자 대시보드
+      </div>
+    </nav>
+    <div class="admin-lock" onclick="checkAdmin()">🔑 운영자로 전환</div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- 실천 기록 작성 -->
+    <div id="page-write" class="page active">
+      <div class="page-header">
+        <h1>실천 기록 작성</h1>
+        <p>회차별 실천 계획과 성찰을 기록하고 모든 선생님과 공유해요.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">👤 기본 정보</div>
+        <div class="two-col">
+          <div class="field"><label>이름</label><input id="inp-name" type="text" placeholder="홍길동 선생님"></div>
+          <div class="field"><label>학교 · 지역</label><input id="inp-school" type="text" placeholder="OO초, 서울"></div>
+        </div>
+        <div class="field"><label>이메일 (알림 수신용, 선택)</label><input id="inp-email" type="email" placeholder="teacher@school.kr"></div>
+        <div class="field">
+          <label>주제</label>
+          <div class="chips" style="margin-top:4px">
+            <button class="chip sel" data-v="사회정서교육" onclick="selTopic(this)">사회정서교육</button>
+            <button class="chip" data-v="학생평가와 피드백" onclick="selTopic(this)">학생평가와 피드백</button>
+            <button class="chip" data-v="프로젝트 수업" onclick="selTopic(this)">프로젝트 수업</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📅 회차 선택</div>
+        <div class="chips">
+          <button class="chip sel" data-r="1" onclick="selRound(this)">1회차 — 6월 초</button>
+          <button class="chip" data-r="2" onclick="selRound(this)">2회차 — 7월 중순</button>
+          <button class="chip" data-r="3" onclick="selRound(this)">3회차 — 8월 말</button>
+          <button class="chip" data-r="4" onclick="selRound(this)">4회차 — 10~11월</button>
+        </div>
+        <div class="round-desc" id="round-desc">기본 이론 강의 후 자기 실천 계획을 수립합니다.</div>
+      </div>
+
+      <div id="form-area"></div>
+
+      <div class="btn-row">
+        <button class="btn" onclick="clearWriteForm()">초기화</button>
+        <button class="btn btn-primary" id="save-btn" onclick="saveRecord()">💾 저장 및 공유</button>
+      </div>
+    </div>
+
+    <!-- 함께 보기 -->
+    <div id="page-board" class="page">
+      <div class="page-header">
+        <h1>함께 보기</h1>
+        <p>모든 선생님의 실천 기록을 한눈에 확인해요.</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📊 참여 현황</div>
+          <button class="btn btn-sm" onclick="loadBoard()">🔄 새로고침</button>
+        </div>
+        <div class="stats-grid" id="board-stats">
+          <div class="stat-card"><div class="stat-num" id="bs-total">—</div><div class="stat-label">전체 기록</div></div>
+          <div class="stat-card"><div class="stat-num" id="bs-r1">—</div><div class="stat-label">1회차</div></div>
+          <div class="stat-card"><div class="stat-num" id="bs-r2">—</div><div class="stat-label">2회차</div></div>
+          <div class="stat-card"><div class="stat-num" id="bs-r34">—</div><div class="stat-label">3·4회차</div></div>
+        </div>
+        <div id="topic-bars"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 최근 기록</div>
+        <div id="board-list"><div class="empty"><div class="empty-icon">📝</div>불러오는 중...</div></div>
+      </div>
+    </div>
+
+    <!-- AI 피드백 -->
+    <div id="page-ai" class="page">
+      <div class="page-header">
+        <h1>AI 성찰 피드백</h1>
+        <p>실천 내용을 적으면 Claude가 따뜻하고 구체적인 피드백을 드려요.</p>
+      </div>
+      <div class="card">
+        <div class="field">
+          <label>내 실천 내용을 자유롭게 적어주세요</label>
+          <textarea id="ai-input" style="min-height:120px" placeholder="예: 1회차 이후 매주 월요일 아침 감정 체크인을 해봤는데, 처음엔 학생들이 어색해했지만 3주차부터 자발적으로 참여하는 아이들이 생겼어요. 다만 시간이 부족할 때 건너뛰게 되는 게 고민이에요."></textarea>
+        </div>
+        <div class="two-col">
+          <div class="field">
+            <label>피드백 유형</label>
+            <select id="ai-type">
+              <option value="encourage">격려와 강점 발견</option>
+              <option value="reflect">성찰 질문 제시</option>
+              <option value="next">다음 실천을 위한 제안</option>
+              <option value="peer">동료 멘토처럼 조언</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>회차 맥락</label>
+            <select id="ai-round">
+              <option value="1">1회차 이후 — 첫 실천</option>
+              <option value="2">2회차 이후 — 1학기 성찰</option>
+              <option value="3">3회차 이후 — 2학기 준비</option>
+              <option value="4">4회차 — 연말 종합</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:4px">
+          <button class="btn btn-primary" id="ai-btn" onclick="getAIFeedback()">✨ 피드백 받기</button>
+        </div>
+      </div>
+      <div id="ai-result-area"></div>
+    </div>
+
+    <!-- 이메일 알림 설정 -->
+    <div id="page-email" class="page">
+      <div class="page-header">
+        <h1>이메일 알림 설정</h1>
+        <p>회차 시작 전 알림을 받아 연수에 꾸준히 참여하세요.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📧 알림 수신 이메일</div>
+        <div class="field"><input id="email-addr" type="email" placeholder="teacher@school.kr" style="max-width:320px"></div>
+        <p style="font-size:12px;color:var(--text3)">저장된 이메일: <span id="saved-email-display" style="color:var(--accent)">없음</span></p>
+      </div>
+      <div class="card">
+        <div class="card-title">🔔 알림 항목 설정</div>
+        <div id="email-settings-list">
+          <div class="email-config-row">
+            <div class="email-config-info">
+              <div class="title">1회차 시작 알림</div>
+              <div class="desc">6월 초 연수 1일 전 알림</div>
+            </div>
+            <div class="toggle on" id="tog-r1" onclick="toggleNotif('r1')"></div>
+          </div>
+          <div class="email-config-row">
+            <div class="email-config-info">
+              <div class="title">2회차 시작 알림</div>
+              <div class="desc">7월 중순 연수 1일 전 알림</div>
+            </div>
+            <div class="toggle on" id="tog-r2" onclick="toggleNotif('r2')"></div>
+          </div>
+          <div class="email-config-row">
+            <div class="email-config-info">
+              <div class="title">3회차 시작 알림</div>
+              <div class="desc">8월 말 연수 1일 전 알림</div>
+            </div>
+            <div class="toggle on" id="tog-r3" onclick="toggleNotif('r3')"></div>
+          </div>
+          <div class="email-config-row">
+            <div class="email-config-info">
+              <div class="title">4회차 시작 알림</div>
+              <div class="desc">10~11월 연수 1일 전 알림</div>
+            </div>
+            <div class="toggle on" id="tog-r4" onclick="toggleNotif('r4')"></div>
+          </div>
+          <div class="email-config-row">
+            <div class="email-config-info">
+              <div class="title">동료 기록 공유 알림</div>
+              <div class="desc">새 실천 기록이 등록될 때 (주 1회 요약)</div>
+            </div>
+            <div class="toggle" id="tog-peer" onclick="toggleNotif('peer')"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="background:var(--surface2)">
+        <div style="font-size:13px;color:var(--text2);line-height:1.8">
+          <strong>📌 이메일 알림 안내</strong><br>
+          이 앱은 독립 HTML 파일로 실제 이메일 발송을 위해서는 백엔드 서버 또는 EmailJS, Google Apps Script 등의 연동이 필요합니다.<br><br>
+          <strong>추천 방법:</strong><br>
+          · <strong>EmailJS</strong> — 무료 플랜으로 월 200건 발송 가능<br>
+          · <strong>Google Apps Script</strong> — 구글 계정으로 무료 발송<br>
+          · <strong>Netlify Functions</strong> — 앱 배포 시 서버리스 함수로 처리<br><br>
+          설정 파일(emailjs-config.json)에 서비스 ID를 입력하면 자동 연동됩니다.
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveEmailSettings()">💾 설정 저장</button>
+      </div>
+    </div>
+
+    <!-- 엑셀 내보내기 -->
+    <div id="page-export" class="page">
+      <div class="page-header">
+        <h1>엑셀 내보내기</h1>
+        <p>기록된 데이터를 Excel 파일로 다운로드해요.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 내보내기 옵션</div>
+        <div class="field">
+          <label>데이터 범위</label>
+          <select id="export-scope">
+            <option value="all">전체 기록 (모든 회차)</option>
+            <option value="1">1회차만</option>
+            <option value="2">2회차만</option>
+            <option value="3">3회차만</option>
+            <option value="4">4회차만</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>포함할 열</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2);font-weight:400">
+              <input type="checkbox" id="col-name" checked> 이름
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2);font-weight:400">
+              <input type="checkbox" id="col-school" checked> 학교·지역
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2);font-weight:400">
+              <input type="checkbox" id="col-topic" checked> 주제
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2);font-weight:400">
+              <input type="checkbox" id="col-round" checked> 회차
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2);font-weight:400">
+              <input type="checkbox" id="col-date" checked> 날짜
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2);font-weight:400">
+              <input type="checkbox" id="col-answers" checked> 답변 내용
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="card" id="export-preview-card">
+        <div class="card-title">👁 미리보기</div>
+        <div id="export-preview"><div class="empty" style="padding:20px 0">내보내기 버튼을 누르면 미리보기가 생성됩니다.</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="previewExport()">👁 미리보기</button>
+        <button class="btn btn-primary" onclick="doExport()">⬇ Excel 다운로드</button>
+      </div>
+    </div>
+
+    <!-- 운영자 대시보드 -->
+    <div id="page-admin" class="page">
+      <div class="page-header">
+        <h1>운영자 대시보드 <span class="admin-badge">ADMIN</span></h1>
+        <p>전체 참가자 현황을 관리하고 데이터를 분석해요.</p>
+      </div>
+
+      <div class="stats-grid" id="admin-stats">
+        <div class="stat-card"><div class="stat-num" id="as-total">—</div><div class="stat-label">전체 기록</div></div>
+        <div class="stat-card"><div class="stat-num" id="as-names">—</div><div class="stat-label">참가 인원</div></div>
+        <div class="stat-card"><div class="stat-num" id="as-complete">—</div><div class="stat-label">4회차 완주</div></div>
+        <div class="stat-card"><div class="stat-num" id="as-today">—</div><div class="stat-label">오늘 신규</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 전체 기록 관리</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm" onclick="loadAdmin()">🔄 새로고침</button>
+            <button class="btn btn-sm btn-primary" onclick="doExport()">⬇ Excel</button>
+          </div>
+        </div>
+        <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <select id="admin-filter-r" onchange="applyAdminFilter()" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)">
+            <option value="">전체 회차</option>
+            <option value="1">1회차</option>
+            <option value="2">2회차</option>
+            <option value="3">3회차</option>
+            <option value="4">4회차</option>
+          </select>
+          <select id="admin-filter-t" onchange="applyAdminFilter()" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)">
+            <option value="">전체 주제</option>
+            <option value="사회정서교육">사회정서교육</option>
+            <option value="학생평가와 피드백">학생평가와 피드백</option>
+            <option value="프로젝트 수업">프로젝트 수업</option>
+          </select>
+          <input id="admin-search" type="text" placeholder="이름 검색..." oninput="applyAdminFilter()" style="font-size:12px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);width:140px">
+        </div>
+        <div class="table-wrap">
+          <table id="admin-table">
+            <thead>
+              <tr>
+                <th>이름</th>
+                <th>학교</th>
+                <th>주제</th>
+                <th>회차</th>
+                <th>날짜</th>
+                <th>요약</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="admin-tbody">
+              <tr><td colspan="7" style="text-align:center;color:var(--text3);padding:24px">불러오는 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📈 주제별 참여 분석</div>
+        <div id="admin-topic-chart" style="margin-top:8px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📅 회차별 진행 현황</div>
+        <div id="admin-round-chart" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('detail-modal')">×</button>
+    <h2 id="modal-name">기록 상세</h2>
+    <div id="modal-body"></div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-sm btn-primary" onclick="sendAIForRec()">✨ AI 피드백</button>
+      <button class="btn btn-sm" onclick="closeModal('detail-modal')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin PIN modal -->
+<div class="modal-overlay" id="admin-modal">
+  <div class="modal" style="width:320px">
+    <button class="modal-close" onclick="closeModal('admin-modal')">×</button>
+    <h2>운영자 로그인</h2>
+    <div class="field" style="margin-top:16px">
+      <label>비밀번호</label>
+      <input id="admin-pin" type="password" placeholder="운영자 비밀번호 입력" onkeydown="if(event.key==='Enter')verifyAdmin()">
+    </div>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:12px">기본 비밀번호: <code>teacher2026</code></p>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn btn-primary" onclick="verifyAdmin()">로그인</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-bar" id="toast"></div>
+
+<script>
+/* ===================== DATA ===================== */
+const ROUND_DESC = {
+  1:'기본 이론 강의 후 자기 실천 계획을 수립합니다.',
+  2:'1학기 자기 실천을 성찰하고 멘토링을 받으며 2차 실천 계획을 수립합니다.',
+  3:'2학기 실천 계획을 함께 나눕니다.',
+  4:'한 해의 실천을 종합적으로 돌아봅니다.'
+};
+const ROUND_LABEL = {1:'1회차',2:'2회차',3:'3회차',4:'4회차'};
+const Q = {
+  1:[
+    {id:'q1',label:'오늘 강의에서 가장 인상 깊었던 내용',ph:'새롭게 알게 된 것, 공감된 이론 등'},
+    {id:'q2',label:'내 교실에서 실천하고 싶은 것 (구체적으로)',ph:'예: 매주 월요일 아침 5분 감정 체크인을 해보겠다'},
+    {id:'q3',label:'예상되는 어려움',ph:'시간, 학생 반응, 준비 자료 등'},
+    {id:'q4',label:'이번 연수에서 얻고 싶은 것',ph:'자유롭게 작성'}
+  ],
+  2:[
+    {id:'q1',label:'1회차 이후 실제로 실천한 것',ph:'무엇을, 몇 번, 어떤 상황에서 시도했나요?'},
+    {id:'q2',label:'잘 된 점',ph:'학생 반응, 예상보다 좋았던 부분'},
+    {id:'q3',label:'어려웠던 점과 어떻게 극복했나요',ph:'어려움과 해결 방법'},
+    {id:'q4',label:'2학기 수정 · 보완 계획',ph:'1학기 성찰을 반영한 계획'},
+    {id:'q5',label:'멘토링에서 받고 싶은 도움',ph:'질문, 막히는 부분'}
+  ],
+  3:[
+    {id:'q1',label:'2학기 실천 계획 한 문장으로',ph:'예: 매 수업 마무리에 2분 성찰 루틴을 정착시킨다',short:true},
+    {id:'q2',label:'구체적인 실천 방법 (누가, 언제, 어떻게)',ph:'빈도, 방식, 사용할 자료 등'},
+    {id:'q3',label:'동료와 나누고 싶은 아이디어',ph:'내가 발견한 팁, 자료, 활동'}
+  ],
+  4:[
+    {id:'q1',label:'올해 가장 기억에 남는 실천 장면',ph:'학생 반응, 변화를 느낀 순간 등'},
+    {id:'q2',label:'1년 전과 비교한 나의 성장',ph:'교사로서, 인간으로서 달라진 점'},
+    {id:'q3',label:'내년에 이어갈 것 · 새로 도전할 것',ph:'지속할 실천, 새로운 도전'},
+    {id:'q4',label:'이 연수가 내게 준 것',ph:'자유롭게'}
+  ]
+};
+
+let curRound = 1;
+let allRecords = [];
+let selectedRec = null;
+let isAdmin = false;
+const ADMIN_PIN = 'teacher2026';
+
+// Email settings
+let emailSettings = JSON.parse(localStorage.getItem('email_settings') || JSON.stringify({
+  email:'', r1:true, r2:true, r3:true, r4:true, peer:false
+}));
+
+/* ===================== NAV ===================== */
+function gotoPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
+  if (page === 'board') loadBoard();
+  if (page === 'admin') { if (!isAdmin) { checkAdmin(); return; } loadAdmin(); }
+  if (page === 'email') loadEmailPage();
+  if (page === 'export') loadExportPage();
+}
+
+/* ===================== FORM ===================== */
+function selTopic(el) {
+  document.querySelectorAll('#page-write .chip[data-v]').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function selRound(el) {
+  document.querySelectorAll('#page-write .chip[data-r]').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  curRound = parseInt(el.dataset.r);
+  document.getElementById('round-desc').textContent = ROUND_DESC[curRound];
+  renderForm();
+}
+
+function renderForm() {
+  const qs = Q[curRound];
+  document.getElementById('form-area').innerHTML = `<div class="card">
+    <div class="card-title">📋 ${curRound}회차 실천 기록</div>
+    ${qs.map(q => `<div class="field">
+      <label>${q.label}</label>
+      ${q.short
+        ? `<input id="${q.id}" type="text" placeholder="${q.ph}">`
+        : `<textarea id="${q.id}" placeholder="${q.ph}"></textarea>`}
+    </div>`).join('')}
+  </div>`;
+}
+
+function gv(id) { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+
+/* ===================== SAVE ===================== */
+async function saveRecord() {
+  const name = gv('inp-name');
+  if (!name) { showToast('이름을 입력해주세요', true); return; }
+  const topic = document.querySelector('#page-write .chip[data-v].sel')?.dataset?.v || '';
+  const school = gv('inp-school');
+  const email = gv('inp-email');
+  const answers = Q[curRound].map(q => ({ q: q.label, a: gv(q.id) }));
+  const rec = {
+    name, school, email, topic,
+    round: curRound,
+    date: new Date().toLocaleDateString('ko-KR'),
+    ts: Date.now(),
+    answers
+  };
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 저장 중...';
+  // Save to localStorage (shared simulation)
+  const stored = JSON.parse(localStorage.getItem('shared_records') || '[]');
+  stored.push(rec);
+  localStorage.setItem('shared_records', JSON.stringify(stored));
+  // Save email if provided
+  if (email) { emailSettings.email = email; saveEmailSettingsLocal(); }
+  await new Promise(r => setTimeout(r, 600));
+  btn.disabled = false;
+  btn.innerHTML = '💾 저장 및 공유';
+  showToast('저장되었습니다! 모든 선생님과 공유됩니다 ✓');
+  clearWriteForm();
+}
+
+function clearWriteForm() {
+  document.getElementById('inp-name').value = '';
+  document.getElementById('inp-school').value = '';
+  document.getElementById('inp-email').value = '';
+  renderForm();
+}
+
+/* ===================== LOAD RECORDS ===================== */
+function getRecords() {
+  try { return JSON.parse(localStorage.getItem('shared_records') || '[]'); } catch(e) { return []; }
+}
+
+/* ===================== BOARD ===================== */
+function loadBoard() {
+  const recs = getRecords();
+  allRecords = recs;
+  // Stats
+  document.getElementById('bs-total').textContent = recs.length;
+  document.getElementById('bs-r1').textContent = recs.filter(r => r.round === 1).length;
+  document.getElementById('bs-r2').textContent = recs.filter(r => r.round === 2).length;
+  document.getElementById('bs-r34').textContent = recs.filter(r => r.round === 3 || r.round === 4).length;
+  // Topic bars
+  const topics = ['사회정서교육', '학생평가와 피드백', '프로젝트 수업'];
+  const colors = ['#2D5A3D', '#1B4F8A', '#7A5200'];
+  const max = Math.max(1, ...topics.map(t => recs.filter(r => r.topic === t).length));
+  document.getElementById('topic-bars').innerHTML = topics.map((t, i) => {
+    const cnt = recs.filter(r => r.topic === t).length;
+    const pct = Math.round(cnt / max * 100);
+    return `<div class="prog-row">
+      <div class="prog-label">${t}</div>
+      <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${colors[i]}"></div></div>
+      <div class="prog-count">${cnt}</div>
+    </div>`;
+  }).join('');
+  // List
+  const listEl = document.getElementById('board-list');
+  if (!recs.length) {
+    listEl.innerHTML = '<div class="empty"><div class="empty-icon">📝</div>아직 기록이 없어요. 첫 번째로 실천을 기록해보세요!</div>';
+    return;
+  }
+  listEl.innerHTML = recs.slice().reverse().slice(0, 25).map((r, i) => {
+    const initials = (r.name || '?').slice(0, 2);
+    const preview = r.answers?.[0]?.a || '';
+    return `<div class="rec-item" onclick="showDetail(${recs.length - 1 - i})">
+      <div class="avatar">${initials}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="rec-name">${r.name || '익명'}</span>
+          ${r.school ? `<span style="font-size:12px;color:var(--text3)">${r.school}</span>` : ''}
+          <span class="badge badge-r${r.round}" style="margin-left:auto">${ROUND_LABEL[r.round] || ''}</span>
+        </div>
+        <div class="rec-sub">${r.topic || ''} · ${r.date || ''}</div>
+        ${preview ? `<div class="rec-preview">${preview}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ===================== DETAIL MODAL ===================== */
+function showDetail(idx) {
+  const rec = getRecords()[idx];
+  if (!rec) return;
+  selectedRec = rec;
+  document.getElementById('modal-name').innerHTML =
+    `${rec.name} <span class="badge badge-r${rec.round}">${ROUND_LABEL[rec.round]}</span>`;
+  document.getElementById('modal-body').innerHTML = `
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">${rec.topic || ''} · ${rec.school || ''} · ${rec.date || ''}</div>
+    ${(rec.answers || []).map(a => `<div class="ans-block">
+      <div class="ans-q">${a.q}</div>
+      <div class="ans-a">${a.a || '(미작성)'}</div>
+    </div>`).join('')}
+  `;
+  openModal('detail-modal');
+}
+
+function sendAIForRec() {
+  if (!selectedRec) return;
+  closeModal('detail-modal');
+  const preview = (selectedRec.answers || []).map(a => `${a.q}: ${a.a}`).join('\n');
+  document.getElementById('ai-input').value = preview;
+  gotoPage('ai');
+  setTimeout(getAIFeedback, 300);
+}
+
+/* ===================== AI FEEDBACK ===================== */
+async function getAIFeedback() {
+  const text = gv('ai-input');
+  if (!text) { showToast('실천 내용을 입력해주세요', true); return; }
+  const typeMap = { encourage:'격려와 강점 발견', reflect:'성찰 질문 제시', next:'다음 실천을 위한 제안', peer:'동료 멘토처럼 조언' };
+  const roundCtx = { 1:'첫 실천 시작', 2:'1학기 성찰', 3:'2학기 준비', 4:'연말 종합 돌아보기' };
+  const type = document.getElementById('ai-type').value;
+  const round = document.getElementById('ai-round').value;
+  const btn = document.getElementById('ai-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 생성 중...';
+  document.getElementById('ai-result-area').innerHTML = `<div class="card"><div class="card-title">✨ AI 피드백</div><div class="ai-result"><span class="spinner spinner-dark"></span> 피드백을 생성하고 있어요...</div></div>`;
+  const system = `당신은 실천교육교사모임의 연수 멘토입니다. 교사의 실천 기록을 읽고 "${typeMap[type]}" 방식으로 피드백을 줍니다. 현재 맥락은 "${roundCtx[round]}" 시점입니다. 따뜻하고 구체적으로, 400자 이내로 작성해주세요. 교사의 성장을 진심으로 응원하는 톤을 유지해주세요. 한국어로 답하세요.`;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system,
+        messages: [{ role: 'user', content: `교사 실천 기록:\n${text}` }]
+      })
+    });
+    const data = await resp.json();
+    const msg = data.content?.map(c => c.text || '').join('') || '피드백을 받지 못했습니다.';
+    document.getElementById('ai-result-area').innerHTML = `<div class="card">
+      <div class="card-header">
+        <div class="card-title">✨ AI 피드백 — ${typeMap[type]}</div>
+        <button class="btn btn-sm" onclick="copyAI()">📋 복사</button>
+      </div>
+      <div class="ai-result" id="ai-text">${msg}</div>
+    </div>`;
+  } catch(e) {
+    document.getElementById('ai-result-area').innerHTML = `<div class="card"><div class="ai-result" style="color:#C0392B">오류: ${e.message}</div></div>`;
+  }
+  btn.disabled = false; btn.innerHTML = '✨ 피드백 받기';
+}
+
+function copyAI() {
+  const txt = document.getElementById('ai-text')?.textContent || '';
+  navigator.clipboard?.writeText(txt).then(() => showToast('복사되었습니다'));
+}
+
+/* ===================== EMAIL SETTINGS ===================== */
+function loadEmailPage() {
+  document.getElementById('email-addr').value = emailSettings.email || '';
+  document.getElementById('saved-email-display').textContent = emailSettings.email || '없음';
+  ['r1','r2','r3','r4','peer'].forEach(k => {
+    const el = document.getElementById('tog-' + k);
+    if (el) el.classList.toggle('on', !!emailSettings[k]);
+  });
+}
+
+function toggleNotif(key) {
+  emailSettings[key] = !emailSettings[key];
+  const el = document.getElementById('tog-' + key);
+  if (el) el.classList.toggle('on', emailSettings[key]);
+}
+
+function saveEmailSettings() {
+  emailSettings.email = gv('email-addr');
+  saveEmailSettingsLocal();
+  document.getElementById('saved-email-display').textContent = emailSettings.email || '없음';
+  showToast('알림 설정이 저장되었습니다');
+}
+
+function saveEmailSettingsLocal() {
+  localStorage.setItem('email_settings', JSON.stringify(emailSettings));
+}
+
+/* ===================== EXPORT ===================== */
+function loadExportPage() {
+  document.getElementById('export-preview').innerHTML = '<div class="empty" style="padding:20px 0">내보내기 버튼을 누르면 미리보기가 생성됩니다.</div>';
+}
+
+function getFilteredRecords() {
+  const scope = document.getElementById('export-scope')?.value || 'all';
+  const recs = getRecords();
+  return scope === 'all' ? recs : recs.filter(r => r.round === parseInt(scope));
+}
+
+function buildRows(recs) {
+  const useName = document.getElementById('col-name')?.checked;
+  const useSchool = document.getElementById('col-school')?.checked;
+  const useTopic = document.getElementById('col-topic')?.checked;
+  const useRound = document.getElementById('col-round')?.checked;
+  const useDate = document.getElementById('col-date')?.checked;
+  const useAns = document.getElementById('col-answers')?.checked;
+  const header = [];
+  if (useName) header.push('이름');
+  if (useSchool) header.push('학교·지역');
+  if (useTopic) header.push('주제');
+  if (useRound) header.push('회차');
+  if (useDate) header.push('날짜');
+  if (useAns) {
+    for (let i = 1; i <= 5; i++) header.push(`답변${i}`);
+  }
+  const rows = [header];
+  recs.forEach(r => {
+    const row = [];
+    if (useName) row.push(r.name || '');
+    if (useSchool) row.push(r.school || '');
+    if (useTopic) row.push(r.topic || '');
+    if (useRound) row.push(ROUND_LABEL[r.round] || '');
+    if (useDate) row.push(r.date || '');
+    if (useAns) {
+      for (let i = 0; i < 5; i++) row.push(r.answers?.[i]?.a || '');
+    }
+    rows.push(row);
+  });
+  return rows;
+}
+
+function previewExport() {
+  const recs = getFilteredRecords();
+  if (!recs.length) { document.getElementById('export-preview').innerHTML = '<div class="empty" style="padding:20px 0">기록이 없습니다.</div>'; return; }
+  const rows = buildRows(recs);
+  const table = `<div class="table-wrap"><table>
+    <thead><tr>${rows[0].map(h => `<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${rows.slice(1, 6).map(r => `<tr>${r.map(c => `<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c}</td>`).join('')}</tr>`).join('')}</tbody>
+  </table></div>
+  ${recs.length > 5 ? `<p style="font-size:12px;color:var(--text3);margin-top:8px">외 ${recs.length - 5}개 더...</p>` : ''}`;
+  document.getElementById('export-preview').innerHTML = table;
+}
+
+function doExport() {
+  const recs = getFilteredRecords();
+  if (!recs.length) { showToast('내보낼 기록이 없습니다', true); return; }
+  const rows = buildRows(recs);
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  // Column widths
+  ws['!cols'] = rows[0].map(() => ({ wch: 20 }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '실천기록');
+  const scope = document.getElementById('export-scope')?.value || 'all';
+  const fname = `실천연수_기록_${scope === 'all' ? '전체' : scope + '회차'}_${new Date().toLocaleDateString('ko-KR').replace(/\./g, '').replace(/ /g, '')}.xlsx`;
+  XLSX.writeFile(wb, fname);
+  showToast(`${fname} 다운로드 완료`);
+}
+
+/* ===================== ADMIN ===================== */
+function checkAdmin() {
+  if (isAdmin) { gotoPage('admin'); return; }
+  openModal('admin-modal');
+  setTimeout(() => document.getElementById('admin-pin')?.focus(), 100);
+}
+
+function verifyAdmin() {
+  const pin = document.getElementById('admin-pin')?.value;
+  if (pin === ADMIN_PIN) {
+    isAdmin = true;
+    closeModal('admin-modal');
+    gotoPage('admin');
+    loadAdmin();
+  } else {
+    showToast('비밀번호가 올바르지 않습니다', true);
+  }
+}
+
+let adminAllRecs = [];
+
+function loadAdmin() {
+  adminAllRecs = getRecords();
+  const recs = adminAllRecs;
+  document.getElementById('as-total').textContent = recs.length;
+  const names = new Set(recs.map(r => r.name));
+  document.getElementById('as-names').textContent = names.size;
+  const completed = [...names].filter(n => {
+    const nr = recs.filter(r => r.name === n);
+    return [1,2,3,4].every(round => nr.some(r => r.round === round));
+  });
+  document.getElementById('as-complete').textContent = completed.length;
+  const today = new Date().toLocaleDateString('ko-KR');
+  document.getElementById('as-today').textContent = recs.filter(r => r.date === today).length;
+  applyAdminFilter();
+  renderAdminCharts(recs);
+}
+
+function applyAdminFilter() {
+  const rf = document.getElementById('admin-filter-r')?.value;
+  const tf = document.getElementById('admin-filter-t')?.value;
+  const sf = (document.getElementById('admin-search')?.value || '').toLowerCase();
+  let recs = adminAllRecs;
+  if (rf) recs = recs.filter(r => r.round === parseInt(rf));
+  if (tf) recs = recs.filter(r => r.topic === tf);
+  if (sf) recs = recs.filter(r => (r.name || '').toLowerCase().includes(sf));
+  const tbody = document.getElementById('admin-tbody');
+  if (!recs.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:24px">기록이 없습니다</td></tr>';
+    return;
+  }
+  tbody.innerHTML = recs.slice().reverse().map((r, i) => {
+    const preview = r.answers?.[0]?.a?.slice(0, 40) || '';
+    return `<tr>
+      <td><strong>${r.name || '—'}</strong></td>
+      <td style="color:var(--text2)">${r.school || '—'}</td>
+      <td>${r.topic || '—'}</td>
+      <td><span class="badge badge-r${r.round}">${ROUND_LABEL[r.round]}</span></td>
+      <td style="color:var(--text3)">${r.date || '—'}</td>
+      <td style="color:var(--text2);max-width:160px">${preview}${preview.length === 40 ? '...' : ''}</td>
+      <td><button class="btn btn-sm" onclick="adminViewDetail(${recs.length - 1 - i})">보기</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function adminViewDetail(idx) {
+  showDetail(idx);
+}
+
+function renderAdminCharts(recs) {
+  const topics = ['사회정서교육', '학생평가와 피드백', '프로젝트 수업'];
+  const tColors = ['#2D5A3D', '#1B4F8A', '#7A5200'];
+  const tMax = Math.max(1, ...topics.map(t => recs.filter(r => r.topic === t).length));
+  document.getElementById('admin-topic-chart').innerHTML = topics.map((t, i) => {
+    const cnt = recs.filter(r => r.topic === t).length;
+    const pct = Math.round(cnt / tMax * 100);
+    return `<div class="prog-row">
+      <div class="prog-label">${t}</div>
+      <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${tColors[i]}"></div></div>
+      <div class="prog-count">${cnt}</div>
+    </div>`;
+  }).join('');
+  const rColors = { 1:'var(--r1)', 2:'var(--r2)', 3:'var(--r3)', 4:'var(--r4)' };
+  const rMax = Math.max(1, ...[1,2,3,4].map(r => recs.filter(rec => rec.round === r).length));
+  document.getElementById('admin-round-chart').innerHTML = [1,2,3,4].map(r => {
+    const cnt = recs.filter(rec => rec.round === r).length;
+    const pct = Math.round(cnt / rMax * 100);
+    const labels = {1:'1회차 (6월)',2:'2회차 (7월)',3:'3회차 (8월)',4:'4회차 (10~11월)'};
+    return `<div class="prog-row">
+      <div class="prog-label">${labels[r]}</div>
+      <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${rColors[r]}"></div></div>
+      <div class="prog-count">${cnt}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ===================== MODAL ===================== */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  if (id === 'admin-modal') document.getElementById('admin-pin').value = '';
+}
+
+/* ===================== TOAST ===================== */
+function showToast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast-bar' + (isErr ? ' err' : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ===================== INIT ===================== */
+renderForm();
+loadEmailPage();
+
+// Demo data seed (first load only)
+if (!localStorage.getItem('demo_seeded')) {
+  const demo = [
+    { name:'김지은', school:'OO초, 서울', email:'', topic:'사회정서교육', round:1, date:'2026. 6. 3.', ts:Date.now()-86400000*5,
+      answers:[{q:'인상 깊었던 내용',a:'감정 코칭의 5단계가 특히 인상적이었습니다. 그동안 학생의 감정을 인정하지 않고 바로 해결책을 제시했던 것 같아 반성하게 됐어요.'},{q:'실천 계획',a:'매주 월요일 아침 5분, 날씨카드를 활용한 감정 체크인을 시작해보려고 합니다.'}]},
+    { name:'박민준', school:'OO중, 경기', email:'', topic:'학생평가와 피드백', round:1, date:'2026. 6. 4.', ts:Date.now()-86400000*4,
+      answers:[{q:'인상 깊었던 내용',a:'피드백은 성적이 아니라 성장을 향해야 한다는 말이 마음에 남았습니다.'},{q:'실천 계획',a:'단원 마무리마다 학생들에게 자기평가 시트를 제공하고, 교사 피드백을 점수 대신 코멘트로 제공해보겠습니다.'}]},
+    { name:'이수현', school:'OO고, 부산', email:'', topic:'프로젝트 수업', round:2, date:'2026. 7. 15.', ts:Date.now()-86400000*2,
+      answers:[{q:'1학기 실천한 것',a:'학생들이 직접 탐구 주제를 선택하는 방식으로 프로젝트 수업을 3번 진행했습니다.'},{q:'잘 된 점',a:'학생들의 참여도가 눈에 띄게 높아졌습니다. 특히 평소 조용하던 학생들도 적극적으로 나서더라고요.'}]},
+  ];
+  const stored = JSON.parse(localStorage.getItem('shared_records') || '[]');
+  localStorage.setItem('shared_records', JSON.stringify([...stored, ...demo]));
+  localStorage.setItem('demo_seeded', '1');
+}
+</script>
+</body>
+</html>
