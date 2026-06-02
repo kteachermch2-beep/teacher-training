@@ -422,6 +422,9 @@ tr:hover td { background: var(--surface2); }
       </div>
       <div class="nav-item" data-page="export" onclick="gotoPage('export')">
         <span class="nav-icon">📊</span> 엑셀 내보내기
+        <div class="nav-item" data-page="myexport" onclick="gotoPage('myexport')">
+  <span class="nav-icon">📥</span> 내 기록 다운로드
+</div>
       </div>
       <div class="nav-divider"></div>
       <div class="nav-item" data-page="admin" onclick="checkAdmin()">
@@ -613,6 +616,22 @@ tr:hover td { background: var(--surface2); }
         <h1>엑셀 내보내기</h1>
         <p>기록된 데이터를 Excel 파일로 다운로드해요.</p>
       </div>
+      <div id="page-myexport" class="page">
+  <div class="page-header">
+    <h1>내 기록 다운로드</h1>
+    <p>내 이름으로 저장된 기록만 Excel로 다운로드해요.</p>
+  </div>
+  <div class="card">
+    <div class="field">
+      <label>이름 입력</label>
+      <input id="myexport-name" type="text" placeholder="기록할 때 입력한 이름과 동일하게">
+    </div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn btn-primary" onclick="doMyExport()">⬇ 내 기록 다운로드</button>
+    </div>
+  </div>
+  <div id="myexport-result"></div>
+</div>
       <div class="card">
         <div class="card-title">📊 내보내기 옵션</div>
         <div class="field">
@@ -1089,7 +1108,26 @@ function previewExport() {
   ${recs.length > 5 ? `<p style="font-size:12px;color:var(--text3);margin-top:8px">외 ${recs.length - 5}개 더...</p>` : ''}`;
   document.getElementById('export-preview').innerHTML = table;
 }
-
+function doMyExport() {
+  const name = document.getElementById('myexport-name').value.trim();
+  if (!name) { showToast('이름을 입력해주세요', true); return; }
+  const recs = getRecords().filter(r => r.name === name);
+  if (!recs.length) { showToast('해당 이름으로 저장된 기록이 없습니다', true); return; }
+  const rows = [['이름','학교·지역','주제','회차','날짜','답변1','답변2','답변3','답변4','답변5']];
+  recs.forEach(r => {
+    rows.push([
+      r.name||'', r.school||'', r.topic||'', ROUND_LABEL[r.round]||'', r.date||'',
+      r.answers?.[0]?.a||'', r.answers?.[1]?.a||'', r.answers?.[2]?.a||'',
+      r.answers?.[3]?.a||'', r.answers?.[4]?.a||''
+    ]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = rows[0].map(() => ({ wch: 20 }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '내실천기록');
+  XLSX.writeFile(wb, `실천연수_${name}_${new Date().toLocaleDateString('ko-KR').replace(/\./g,'').replace(/ /g,'')}.xlsx`);
+  showToast(`${name} 선생님 기록 다운로드 완료`);
+}
 function doExport() {
   const recs = getFilteredRecords();
   if (!recs.length) { showToast('내보낼 기록이 없습니다', true); return; }
