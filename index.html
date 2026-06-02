@@ -604,9 +604,9 @@ function showDetail(idx) {
   const rec = getRecords()[idx];
   if (!rec) return;
   selectedRec = rec;
-  document.getElementById('modal-name').innerHTML = `${rec.name} <span class="badge badge-r${rec.round}">${ROUND_LABEL[rec.round]}</span>`;
+  document.getElementById('modal-name').innerHTML = `<span class="badge badge-r${rec.round}">${ROUND_LABEL[rec.round]}</span>`;
   document.getElementById('modal-body').innerHTML = `
-    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">${rec.topic || ''} · ${rec.school || ''} · ${rec.date || ''}</div>
+   <div style="font-size:12px;color:var(--text3);margin-bottom:12px">${rec.topic || ''} · ${rec.date || ''}</div>
     ${(rec.answers || []).map(a => `<div class="ans-block"><div class="ans-q">${a.q}</div><div class="ans-a">${a.a || '(미작성)'}</div></div>`).join('')}`;
   openModal('detail-modal');
 }
