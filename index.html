@@ -551,7 +551,7 @@ async function saveRecord() {
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 저장 중...';
   // Google 시트에 저장
   try {
-    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(rec) });
+    await fetch(GAS_URL + '?action=save&data=' + encodeURIComponent(JSON.stringify(rec)));
   } catch(e) {
     // 시트 전송 실패 시 로컬에 백업
     const stored = JSON.parse(localStorage.getItem('shared_records') || '[]');
