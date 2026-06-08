@@ -87,7 +87,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 .rec-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
 .rec-item:last-child { border-bottom: none; }
 .rec-item:hover { background: var(--surface2); margin: 0 -24px; padding: 14px 24px; border-radius: 6px; border-bottom-color: transparent; }
-.avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-size: 18px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .rec-preview { font-size: 13px; color: var(--text2); margin-top: 4px; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .prog-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
 .prog-label { font-size: 12px; color: var(--text2); width: 120px; flex-shrink: 0; }
@@ -286,10 +286,6 @@ tr:hover td { background: var(--surface2); }
         <div class="field">
           <label>이름 입력</label>
           <input id="myexport-name" type="text" placeholder="기록할 때 입력한 이름과 동일하게">
-          <div class="field">
-  <label>이메일</label>
-  <input id="myexport-email" type="email" placeholder="기록할 때 입력한 이메일과 동일하게">
-</div>
         </div>
         <div class="btn-row" style="margin-top:4px">
           <button class="btn btn-primary" onclick="doMyExport()">⬇ 내 기록 다운로드</button>
@@ -508,6 +504,7 @@ let allRecords = [];
 let selectedRec = null;
 let isAdmin = false;
 const ADMIN_PIN = 'teacher2026';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwZa2E-R6t3-y7OhcqssC9YzLfgVvzftblKJdAosaT4Or2imeVbzvJhSeXEPejNiSSs/exec';
 let emailSettings = JSON.parse(localStorage.getItem('email_settings') || JSON.stringify({email:'',r1:true,r2:true,r3:true,r4:true,peer:false}));
 
 function gotoPage(page) {
@@ -552,10 +549,15 @@ async function saveRecord() {
   const rec = { name, school: gv('inp-school'), email: gv('inp-email'), topic, round: curRound, date: new Date().toLocaleDateString('ko-KR'), ts: Date.now(), answers };
   const btn = document.getElementById('save-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 저장 중...';
-  const stored = JSON.parse(localStorage.getItem('shared_records') || '[]');
-  stored.push(rec);
-  localStorage.setItem('shared_records', JSON.stringify(stored));
-  await new Promise(r => setTimeout(r, 600));
+  // Google 시트에 저장
+  try {
+    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(rec) });
+  } catch(e) {
+    // 시트 전송 실패 시 로컬에 백업
+    const stored = JSON.parse(localStorage.getItem('shared_records') || '[]');
+    stored.push(rec);
+    localStorage.setItem('shared_records', JSON.stringify(stored));
+  }
   btn.disabled = false; btn.innerHTML = '💾 저장 및 공유';
   showToast('저장되었습니다! 모든 선생님과 공유됩니다 ✓');
   clearWriteForm();
@@ -568,12 +570,18 @@ function clearWriteForm() {
   renderForm();
 }
 
-function getRecords() {
-  try { return JSON.parse(localStorage.getItem('shared_records') || '[]'); } catch(e) { return []; }
+async function getRecords() {
+  try {
+    const resp = await fetch(GAS_URL);
+    const data = await resp.json();
+    return data.records || [];
+  } catch(e) {
+    return JSON.parse(localStorage.getItem('shared_records') || '[]');
+  }
 }
 
-function loadBoard() {
-  const recs = getRecords();
+async function loadBoard() {
+  const recs = await getRecords();
   allRecords = recs;
   document.getElementById('bs-total').textContent = recs.length;
   document.getElementById('bs-r1').textContent = recs.filter(r => r.round === 1).length;
@@ -589,8 +597,7 @@ function loadBoard() {
   const listEl = document.getElementById('board-list');
   if (!recs.length) { listEl.innerHTML = '<div class="empty"><div class="empty-icon">📝</div>아직 기록이 없어요. 첫 번째로 실천을 기록해보세요!</div>'; return; }
   listEl.innerHTML = recs.slice().reverse().slice(0, 25).map((r, i) => {
-    const EMOJIS = ['🌱','🌿','🌸','🌻','🍀','🌈','⭐','🌙','🦋','🐣','🍎','🎯','✏️','📚','🎨','🌊','🍃','🌺','🦉','🎵'];
-const initials = EMOJIS[Math.abs(r.name.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % EMOJIS.length];
+    const initials = (r.name || '?').slice(0, 2);
     const preview = r.answers?.[0]?.a || '';
     return `<div class="rec-item" onclick="showDetail(${recs.length - 1 - i})">
       <div class="avatar">${initials}</div>
@@ -609,9 +616,9 @@ function showDetail(idx) {
   const rec = getRecords()[idx];
   if (!rec) return;
   selectedRec = rec;
-  document.getElementById('modal-name').innerHTML = `<span class="badge badge-r${rec.round}">${ROUND_LABEL[rec.round]}</span>`;
+  document.getElementById('modal-name').innerHTML = `${rec.name} <span class="badge badge-r${rec.round}">${ROUND_LABEL[rec.round]}</span>`;
   document.getElementById('modal-body').innerHTML = `
-   <div style="font-size:12px;color:var(--text3);margin-bottom:12px">${rec.topic || ''} · ${rec.date || ''}</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">${rec.topic || ''} · ${rec.school || ''} · ${rec.date || ''}</div>
     ${(rec.answers || []).map(a => `<div class="ans-block"><div class="ans-q">${a.q}</div><div class="ans-a">${a.a || '(미작성)'}</div></div>`).join('')}`;
   openModal('detail-modal');
 }
@@ -675,13 +682,11 @@ function saveEmailSettings() {
   showToast('알림 설정이 저장되었습니다');
 }
 
-function doMyExport() {
+async function doMyExport() {
   const name = document.getElementById('myexport-name').value.trim();
-  const email = document.getElementById('myexport-email').value.trim();
   if (!name) { showToast('이름을 입력해주세요', true); return; }
-  if (!email) { showToast('이메일을 입력해주세요', true); return; }
-  const recs = getRecords().filter(r => r.name === name && r.email === email);
-  if (!recs.length) { showToast('이름 또는 이메일이 일치하지 않습니다', true); return; }
+  const recs = (await getRecords()).filter(r => r.name === name);
+  if (!recs.length) { showToast('해당 이름으로 저장된 기록이 없습니다', true); return; }
   const rows = [['이름','학교·지역','주제','회차','날짜','답변1','답변2','답변3','답변4','답변5']];
   recs.forEach(r => { rows.push([r.name||'',r.school||'',r.topic||'',ROUND_LABEL[r.round]||'',r.date||'',r.answers?.[0]?.a||'',r.answers?.[1]?.a||'',r.answers?.[2]?.a||'',r.answers?.[3]?.a||'',r.answers?.[4]?.a||'']); });
   const ws = XLSX.utils.aoa_to_sheet(rows);
@@ -692,9 +697,9 @@ function doMyExport() {
   showToast(`${name} 선생님 기록 다운로드 완료`);
 }
 
-function getFilteredRecords() {
+async function getFilteredRecords() {
   const scope = document.getElementById('export-scope')?.value || 'all';
-  const recs = getRecords();
+  const recs = await getRecords();
   return scope === 'all' ? recs : recs.filter(r => r.round === parseInt(scope));
 }
 
@@ -726,8 +731,8 @@ function buildRows(recs) {
   return rows;
 }
 
-function previewExport() {
-  const recs = getFilteredRecords();
+async function previewExport() {
+  const recs = await getFilteredRecords();
   if (!recs.length) { document.getElementById('export-preview').innerHTML = '<div class="empty" style="padding:20px 0">기록이 없습니다.</div>'; return; }
   const rows = buildRows(recs);
   document.getElementById('export-preview').innerHTML = `<div class="table-wrap"><table>
@@ -736,8 +741,8 @@ function previewExport() {
   </table></div>${recs.length > 5 ? `<p style="font-size:12px;color:var(--text3);margin-top:8px">외 ${recs.length-5}개 더...</p>` : ''}`;
 }
 
-function doExport() {
-  const recs = getFilteredRecords();
+async function doExport() {
+  const recs = await getFilteredRecords();
   if (!recs.length) { showToast('내보낼 기록이 없습니다', true); return; }
   const rows = buildRows(recs);
   const ws = XLSX.utils.aoa_to_sheet(rows);
@@ -771,8 +776,8 @@ function verifyAdmin() {
 
 let adminAllRecs = [];
 
-function loadAdmin() {
-  adminAllRecs = getRecords();
+async function loadAdmin() {
+  adminAllRecs = await getRecords();
   const recs = adminAllRecs;
   document.getElementById('as-total').textContent = recs.length;
   const names = new Set(recs.map(r => r.name));
