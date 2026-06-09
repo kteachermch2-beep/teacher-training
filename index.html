@@ -151,9 +151,6 @@ tr:hover td { background: var(--surface2); }
       <div class="nav-item" data-page="board" onclick="gotoPage('board')">
         <span class="nav-icon">👥</span> 함께 보기
       </div>
-      <div class="nav-item" data-page="ai" onclick="gotoPage('ai')">
-        <span class="nav-icon">✨</span> AI 성찰 피드백
-      </div>
       <div class="nav-item" data-page="myexport" onclick="gotoPage('myexport')">
         <span class="nav-icon">📥</span> 내 기록 다운로드
       </div>
@@ -238,45 +235,7 @@ tr:hover td { background: var(--surface2); }
       </div>
     </div>
 
-    <!-- AI 피드백 -->
-    <div id="page-ai" class="page">
-      <div class="page-header">
-        <h1>AI 성찰 피드백</h1>
-        <p>실천 내용을 적으면 Claude가 따뜻하고 구체적인 피드백을 드려요.</p>
-      </div>
-      <div class="card">
-        <div class="field">
-          <label>내 실천 내용을 자유롭게 적어주세요</label>
-          <textarea id="ai-input" style="min-height:120px" placeholder="예: 1회차 이후 매주 월요일 아침 감정 체크인을 해봤는데, 처음엔 학생들이 어색해했지만 3주차부터 자발적으로 참여하는 아이들이 생겼어요."></textarea>
-        </div>
-        <div class="two-col">
-          <div class="field">
-            <label>피드백 유형</label>
-            <select id="ai-type">
-              <option value="encourage">격려와 강점 발견</option>
-              <option value="reflect">성찰 질문 제시</option>
-              <option value="next">다음 실천을 위한 제안</option>
-              <option value="peer">동료 멘토처럼 조언</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>회차 맥락</label>
-            <select id="ai-round">
-              <option value="1">1회차 이후 — 첫 실천</option>
-              <option value="2">2회차 이후 — 1학기 성찰</option>
-              <option value="3">3회차 이후 — 2학기 준비</option>
-              <option value="4">4회차 — 연말 종합</option>
-            </select>
-          </div>
-        </div>
-        <div class="btn-row" style="margin-top:4px">
-          <button class="btn btn-primary" id="ai-btn" onclick="getAIFeedback()">✨ 피드백 받기</button>
-        </div>
-      </div>
-      <div id="ai-result-area"></div>
-    </div>
-
-    <!-- 내 기록 다운로드 -->
+      <!-- 내 기록 다운로드 -->
     <div id="page-myexport" class="page">
       <div class="page-header">
         <h1>내 기록 다운로드</h1>
