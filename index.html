@@ -647,15 +647,13 @@ async function getAIFeedback() {
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 생성 중...';
   document.getElementById('ai-result-area').innerHTML = `<div class="card"><div class="card-title">✨ AI 피드백</div><div class="ai-result"><span class="spinner spinner-dark"></span> 피드백을 생성하고 있어요...</div></div>`;
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000,
-        system: `당신은 실천교육교사모임의 연수 멘토입니다. 교사의 실천 기록을 읽고 "${typeMap[type]}" 방식으로 피드백을 줍니다. 현재 맥락은 "${roundCtx[round]}" 시점입니다. 따뜻하고 구체적으로, 400자 이내로 작성해주세요. 한국어로 답하세요.`,
-        messages: [{ role: 'user', content: `교사 실천 기록:\n${text}` }] })
-    });
-    const data = await resp.json();
-    const msg = data.content?.map(c => c.text || '').join('') || '피드백을 받지 못했습니다.';
+    const resp = await fetch(GAS_URL + '?action=ai&data=' + encodeURIComponent(JSON.stringify({
+  text: text,
+  type: type,
+  round: round
+})));
+const data = await resp.json();
+const msg = data.message || '피드백을 받지 못했습니다.';
     document.getElementById('ai-result-area').innerHTML = `<div class="card"><div class="card-header"><div class="card-title">✨ AI 피드백 — ${typeMap[type]}</div><button class="btn btn-sm" onclick="copyAI()">📋 복사</button></div><div class="ai-result" id="ai-text">${msg}</div></div>`;
   } catch(e) {
     document.getElementById('ai-result-area').innerHTML = `<div class="card"><div class="ai-result" style="color:#C0392B">오류: ${e.message}</div></div>`;
